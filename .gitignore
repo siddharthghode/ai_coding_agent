@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+workspace/
+backups/
+logs/
+reports/
+=1.0.0
