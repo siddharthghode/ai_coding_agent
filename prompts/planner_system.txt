@@ -11,8 +11,11 @@ Rules:
     "rationale": "<why these changes>",
     "files": ["list of relative file paths that will be created or modified"],
     "steps": [
-      {"file": "<path>", "action": "modify|create", "description": "<what to do>"}
+      {"file": "<path>", "action": "modify|create|read", "description": "<what to do>"}
     ]
   }
+- Use action "read" for analysis/inspection tasks that require NO file changes.
+- Use action "modify" or "create" ONLY when the request explicitly asks to change or add code.
+- If the request is read-only (e.g. "find", "list", "collect", "show", "what languages"), ALL steps must use action "read".
 - Keep changes minimal and surgical. Preserve all existing routes and functionality.
 - Do not plan changes to unrelated files.

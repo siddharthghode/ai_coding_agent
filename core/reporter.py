@@ -30,19 +30,29 @@ def generate_report(cfg: dict, repo_root: str, request: str, repo_summary: str,
                     plan: dict, results: list, val_result: tuple) -> str:
     run_id   = _next_run_id()
     out_path = os.path.join(REPORTS_DIR, f"run_{run_id}.md")
-    diff_stat = _git_diff_stat(repo_root)
-    diff_full = _git_diff(repo_root)
+
+    read_only = all(r["status"] == "read" for r in results) if results else False
+    ok_files   = [r["file"] for r in results if r["status"] == "ok"]
+    skip_files = [r["file"] for r in results if r["status"] == "skipped"]
+    read_files = [r["file"] for r in results if r["status"] == "read"]
 
     # LLM summary
-    ok_files  = [r["file"] for r in results if r["status"] == "ok"]
-    skip_files = [r["file"] for r in results if r["status"] == "skipped"]
-    summary_prompt = (
-        f"Request: {request}\n"
-        f"Files modified: {ok_files}\n"
-        f"Files skipped: {skip_files}\n"
-        f"Validation: {'PASSED' if val_result[0] else 'FAILED'}\n"
-        "Write 3-5 sentences: what changed, why, and any caveats. Plain English, no markdown."
-    )
+    if read_only:
+        summary_prompt = (
+            f"Request: {request}\n"
+            f"Files read: {read_files}\n"
+            f"Repository summary: {repo_summary}\n"
+            "Write 3-5 sentences answering the request based on the repository summary. "
+            "State clearly that no files were modified. Plain English, no markdown."
+        )
+    else:
+        summary_prompt = (
+            f"Request: {request}\n"
+            f"Files modified: {ok_files}\n"
+            f"Files skipped: {skip_files}\n"
+            f"Validation: {'PASSED' if val_result[0] else 'FAILED'}\n"
+            "Write 3-5 sentences: what changed, why, and any caveats. Plain English, no markdown."
+        )
     llm_summary, _ = llm.chat(cfg, [{"role": "user", "content": summary_prompt}],
                                system="You are a technical writer summarising a code change.")
 
@@ -61,7 +71,7 @@ def generate_report(cfg: dict, repo_root: str, request: str, repo_summary: str,
         "## Per-File Results",
     ]
     for r in results:
-        icon = "✅" if r["status"] == "ok" else "⚠️ SKIPPED"
+        icon = {"ok": "✅", "read": "📖 READ", "skipped": "⚠️ SKIPPED"}.get(r["status"], r["status"])
         lines.append(f"\n### {icon} `{r['file']}`")
         if r["error"]:
             lines.append(f"**Error:** {r['error']}")
@@ -71,18 +81,32 @@ def generate_report(cfg: dict, repo_root: str, request: str, repo_summary: str,
     lines += [
         "",
         "## Validation",
-        f"**Status:** {'PASSED ✅' if val_result[0] else 'FAILED ❌'}",
-        f"```\n{val_result[1][:2000]}\n```",
+        f"**Status:** {val_result[1]}",
         "",
-        "## Git Diff Stat",
-        f"```\n{diff_stat}\n```",
-        "",
-        "## Full Diff",
-        f"```diff\n{diff_full}\n```",
-        "",
-        "## Summary",
-        llm_summary,
     ]
+
+    if read_only:
+        lines += [
+            "## Repository Modified",
+            "No",
+            "",
+            "## Summary",
+            llm_summary,
+        ]
+        diff_stat = "(no changes)"
+    else:
+        diff_stat = _git_diff_stat(repo_root)
+        diff_full = _git_diff(repo_root)
+        lines += [
+            "## Git Diff Stat",
+            f"```\n{diff_stat}\n```",
+            "",
+            "## Full Diff",
+            f"```diff\n{diff_full}\n```",
+            "",
+            "## Summary",
+            llm_summary,
+        ]
 
     with open(out_path, "w") as f:
         f.write("\n".join(lines))

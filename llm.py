@@ -24,6 +24,7 @@ def _openai_chat(cfg, messages, system, tools):
     client = OpenAI(api_key=cfg["api_key"],
                     base_url="https://api.x.ai/v1" if cfg["provider"] == "xai"
                     else "https://openrouter.ai/api/v1" if cfg["provider"] == "openrouter"
+                    else "https://api.groq.com/openai/v1" if cfg["provider"] == "groq"
                     else None)
     msgs = [{"role": "system", "content": system}] + messages
     kwargs = dict(model=cfg["model"], messages=msgs)
@@ -78,7 +79,7 @@ def chat(cfg: dict, messages: list, system: str, tools: list | None = None):
     p = cfg["provider"]
     if p == "anthropic":
         return _anthropic_chat(cfg, messages, system, tools)
-    elif p in ("openai", "xai", "openrouter"):
+    elif p in ("openai", "xai", "openrouter", "groq"):
         return _openai_chat(cfg, messages, system, tools)
     elif p == "gemini":
         return _gemini_chat(cfg, messages, system, tools)

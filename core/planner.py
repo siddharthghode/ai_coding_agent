@@ -11,8 +11,11 @@ def create_plan(cfg: dict, system: str, repo_summary: str, request: str, console
         "content": f"REPOSITORY SUMMARY:\n{repo_summary}\n\nUSER REQUEST:\n{request}\n\nProduce the plan JSON."
     }]
 
+    # Groq's tool-calling is unreliable — disable tools to avoid malformed calls
+    tools = None if cfg["provider"] == "groq" else PLANNER_TOOLS
+
     for _ in range(10):  # tool-use loop
-        text, calls = llm.chat(cfg, messages, system, tools=PLANNER_TOOLS)
+        text, calls = llm.chat(cfg, messages, system, tools=tools)
 
         if not calls:
             # LLM is done — extract JSON
