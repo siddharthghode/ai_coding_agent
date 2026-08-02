@@ -1,3 +1,5 @@
+video link-- https://drive.google.com/file/d/1u8Zj0pEViLBS1OVrxemZ_Dj2CwZC79dp/view?usp=drive_link
+
 # AI Coding Agent
 
 A general-purpose CLI coding agent that explores a git repo, takes a plain-English request, plans changes via an LLM, applies surgical edits, validates each change, and generates a Markdown report.
