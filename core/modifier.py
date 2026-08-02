@@ -1,4 +1,14 @@
-"""modifier.py — per-file LLM edit with immediate validation and retry."""
+"""modifier.py — per-file LLM surgical edits with validation and retry.
+
+For each plan step:
+  1. Back up the file.
+  2. Send file content + task to the modifier LLM.
+  3. LLM returns [{old_str, new_str}, ...] edit operations.
+  4. Apply edits via exact string match (old_str must match exactly once).
+  5. Validate syntax immediately after applying.
+  6. On any failure, restore backup and retry up to MAX_RETRIES times.
+  7. After all retries exhausted, restore and mark step as 'skipped'.
+"""
 import json, os
 import llm
 from core.tools import read_file, write_file, edit_file

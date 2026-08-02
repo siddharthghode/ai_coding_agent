@@ -1,4 +1,19 @@
-"""planner.py — LLM call #1: produce structured plan with optional tool use."""
+"""planner.py — LLM call #1: produce a structured JSON plan.
+
+The planner receives the RepositorySummary + user request and may call
+read_file / search_code / list_files tools to inspect the repo before
+committing to a plan.
+
+Output schema:
+  {
+    "goal": str,
+    "rationale": str,
+    "files": [str],
+    "steps": [{"file": str, "action": "read|modify|create", "description": str}]
+  }
+
+Note: tools are disabled for Groq (unreliable tool-call generation).
+"""
 import json
 import llm
 from core.tools import TOOL_SCHEMAS, TOOL_MAP

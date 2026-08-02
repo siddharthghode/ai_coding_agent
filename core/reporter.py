@@ -1,4 +1,15 @@
-"""reporter.py — generate reports/run_NNN.md."""
+"""reporter.py — generate a Markdown report for each agent run.
+
+Output: reports/run_NNN.md containing:
+  - Original request
+  - Repository summary
+  - Plan JSON
+  - Per-file results (edited / read / skipped)
+  - Validation status
+  - Git diff stat + full diff  (edit runs)
+  - "Repository Modified: No"  (read-only runs)
+  - 3–5 sentence LLM-generated plain-English summary
+"""
 import os, json, subprocess
 from datetime import datetime
 from config import REPORTS_DIR

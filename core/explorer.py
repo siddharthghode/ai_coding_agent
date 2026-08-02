@@ -1,4 +1,11 @@
-"""explorer.py — static repo scan, no LLM."""
+"""explorer.py — static repository scanner, zero LLM calls.
+
+Walks the directory tree (respecting .gitignore), parses package.json,
+and classifies files by conventional directory names (models/, routes/,
+components/, etc.) into a RepositorySummary dataclass.
+
+Used by the planner as a grounded starting point before any LLM calls.
+"""
 import os, json
 from dataclasses import dataclass, field
 

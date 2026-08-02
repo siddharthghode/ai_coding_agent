@@ -1,6 +1,14 @@
 """
-config.py — load env, auto-detect LLM provider from whichever key is present.
-Priority: ANTHROPIC > OPENAI > GEMINI > XAI (Grok) > GROQ
+config.py — environment loading and LLM provider auto-detection.
+
+Reads .env and returns the first provider whose API key is present.
+Priority: ANTHROPIC > OPENAI > GEMINI > XAI > OPENROUTER > GROQ
+
+Also exports directory constants used across the project:
+  WORKSPACE_DIR  — cloned repos
+  REPORTS_DIR    — run_NNN.md reports
+  BACKUPS_DIR    — pre-edit .bak files
+  LOGS_DIR       — reserved for future logging
 """
 import os
 from dotenv import load_dotenv
@@ -8,7 +16,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def get_llm_config() -> dict:
-    """Return {provider, api_key, model} for the first available key."""
+    """
+    Return {provider, api_key, model} for the first available API key.
+    Raises EnvironmentError if no key is found.
+    """
     checks = [
         ("anthropic", os.getenv("ANTHROPIC_API_KEY"), "claude-opus-4-5"),
         ("openai",    os.getenv("OPENAI_API_KEY"),    "gpt-4o"),

@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """
-agent.py — AI Coding Agent entry point.
+agent.py — CLI entry point for the AI Coding Agent.
+
+Orchestrates the 6-step workflow:
+  1. Repo acquisition  — clone or select from workspace/
+  2. Explore           — static scan, zero LLM calls
+  3. Plan              — LLM produces structured JSON plan
+  4. Modify            — per-file surgical edits with retry
+  5. Validate          — syntax + npm install + boot check (edit runs only)
+  6. Report            — reports/run_NNN.md + terminal summary
 
 Usage:
-  python agent.py                          # interactive mode
+  python agent.py                           # fully interactive
   python agent.py "Add search to notes" --repo-url https://github.com/callicoder/node-easy-notes-app
   python agent.py "Add note pinning" --repo /path/to/repo --yes
 """
@@ -83,8 +91,10 @@ def _run_prompt(llm_cfg: dict, repo_root: str, summary_str: str, request: str, y
     # ── Pre-edit confirmation ─────────────────────────────────────────────────
     edit_steps = [s for s in plan.get("steps", []) if s.get("action", "modify") != "read"]
     if edit_steps and not yes:
-        answer = console.input("\n[bold]Proceed with editing files? [y/N][/bold] ").strip().lower()
-        if answer != "y":
+        console.rule("[bold yellow]── Confirm Edits ──")
+        answer = console.input("[bold yellow]Proceed with editing files? (yes/no): [/bold yellow]").strip().lower()
+        console.rule()
+        if answer not in ("y", "yes"):
             console.print("[yellow]Skipped edits — no files changed.[/yellow]")
             return
 
@@ -208,11 +218,12 @@ def main():
         _run_prompt(llm_cfg, repo_root, summary_str, request, args.yes)
 
         console.print()
-        again = console.input("[bold]Run another prompt on this repo? [y/N][/bold] ").strip().lower()
-        if again != "y":
+        console.rule("[bold yellow]── Session ──")
+        again = console.input("[bold yellow]Run another prompt on this repo? (yes/no): [/bold yellow]").strip().lower()
+        console.rule()
+        if again not in ("y", "yes"):
             console.print("[yellow]Done.[/yellow]")
             break
-        # reset so next iteration always prompts for input
         args.request = None
 
 if __name__ == "__main__":

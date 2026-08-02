@@ -1,4 +1,14 @@
-"""validator.py — per-file and whole-repo validation."""
+"""validator.py — per-file syntax checks and whole-repo validation.
+
+validate_file()  — fast syntax check for a single file:
+  .json           — json.loads
+  .js/.jsx/.ts/.tsx — node --check
+
+validate_repo()  — full repo health check (only runs when files were modified):
+  1. npm install (root + client/ if present)
+  2. Boot check  — npm start, wait 8s, look for listen/connect signal
+  3. npm test    — if a test script exists in package.json
+"""
 import os, json, subprocess
 
 def validate_file(abs_path: str) -> tuple[bool, str]:

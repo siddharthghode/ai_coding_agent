@@ -1,4 +1,16 @@
-"""tools.py — tool functions callable by the LLM + their JSON schema definitions."""
+"""tools.py — tool functions callable by the LLM + their JSON schemas.
+
+Available tools:
+  list_files(path)              — directory tree (ignores node_modules/.git)
+  read_file(path)               — full file content
+  write_file(path, content)     — create a new file (not for existing files)
+  edit_file(path, old, new)     — surgical find-and-replace (old must match exactly once)
+  search_code(query)            — regex search across all source files, returns file:line matches
+  run_command(cmd, cwd, timeout)— shell command in the repo
+
+TOOL_SCHEMAS  — Anthropic-format JSON schemas passed to the LLM
+TOOL_MAP      — name → callable mapping used by the planner tool loop
+"""
 import os, re, subprocess, json
 
 _repo_root: str = ""

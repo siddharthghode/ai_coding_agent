@@ -1,4 +1,9 @@
-"""workspace.py — clone or locate repo, manage backups."""
+"""workspace.py — repo acquisition and file backup/restore.
+
+acquire_repo()  — clone a URL into workspace/, use an existing path, or fall back to cwd.
+backup_file()   — copy a file to backups/ before editing; returns the backup path.
+restore_file()  — copy backup back to original path (used on validation failure or retry).
+"""
 import os, shutil, subprocess
 from datetime import datetime
 from config import WORKSPACE_DIR, BACKUPS_DIR

@@ -1,7 +1,18 @@
 """
 llm.py — thin multi-provider LLM client.
-Supports: Anthropic (Claude), OpenAI (GPT), Google (Gemini), xAI (Grok).
-All providers expose the same interface: chat(messages, tools) -> (text, tool_calls)
+
+Supports 6 providers through a single chat() interface:
+  - Anthropic (Claude)   — native tool calling
+  - OpenAI (GPT)         — native tool calling
+  - Google (Gemini)      — FunctionDeclaration tool calling
+  - xAI (Grok)           — OpenAI-compatible
+  - OpenRouter           — OpenAI-compatible proxy
+  - Groq (LLaMA)         — OpenAI-compatible, tools disabled in planner
+
+Public API:
+  chat(cfg, messages, system, tools)         — unified LLM call
+  make_tool_result(cfg, id, name, content)   — build tool-result message
+  make_tool_call_message(cfg, text, calls)   — build assistant tool-call message
 """
 import json
 
@@ -91,7 +102,9 @@ def make_tool_result(cfg: dict, tool_id: str, tool_name: str, content: str) -> d
     p = cfg["provider"]
     if p == "anthropic":
         return {"role": "user", "content": [{"type": "tool_result", "tool_use_id": tool_id, "content": content}]}
-    else:  # openai / xai / gemini treat it as a tool role message
+    elif p == "gemini":
+        return {"role": "user", "content": f"Tool {tool_name} result: {content}"}
+    else:  # openai / xai / openrouter / groq
         return {"role": "tool", "tool_call_id": tool_id, "name": tool_name, "content": content}
 
 def make_tool_call_message(cfg: dict, text: str, calls: list) -> dict:
