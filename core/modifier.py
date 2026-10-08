@@ -19,10 +19,10 @@ MAX_RETRIES = 3
 
 def _parse_edits(text: str) -> list:
     raw = text.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
+    if "```json" in raw:
+        raw = raw.split("```json")[1].split("```")[0]
+    elif "```" in raw:
+        raw = raw.split("```")[1].split("```")[0]
     return json.loads(raw.strip())
 
 def apply_step(cfg: dict, system: str, repo_root: str, step: dict, console=None) -> dict:

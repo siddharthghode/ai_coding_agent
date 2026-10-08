@@ -19,3 +19,5 @@ Rules:
 - If the request is read-only (e.g. "find", "list", "collect", "show", "what languages"), ALL steps must use action "read".
 - Keep changes minimal and surgical. Preserve all existing routes and functionality.
 - Do not plan changes to unrelated files.
+- If PREVIOUS SESSION CONTEXT is provided, use it to understand follow-up requests
+  (e.g. "now add logout" refers to the auth system added in the previous request).

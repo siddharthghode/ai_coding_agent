@@ -26,7 +26,7 @@ def get_llm_config() -> dict:
         ("gemini",    os.getenv("GEMINI_API_KEY"),    "gemini-2.0-flash"),
         ("xai",         os.getenv("XAI_API_KEY"),         "grok-beta"),
         ("openrouter",  os.getenv("OPENROUTER_API_KEY"),  "openai/gpt-4o"),
-        ("groq",         os.getenv("GROQ_API_KEY"),         "llama-3.3-70b-versatile"),
+        ("groq",         os.getenv("GROQ_API_KEY"),         "openai/gpt-oss-120b"),
     ]
     for provider, key, model in checks:
         if key and not key.startswith("<"):

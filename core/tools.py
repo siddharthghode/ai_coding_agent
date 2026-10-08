@@ -31,7 +31,7 @@ def list_files(path: str = ".") -> str:
     if not os.path.exists(base):
         return f"Path not found: {path}"
     lines = []
-    ignored = {"node_modules", ".git", "__pycache__", "dist", "build", ".next"}
+    ignored = {"node_modules", ".git", "__pycache__", "dist", "build", ".next", "venv", ".venv", ".gemini"}
     for root, dirs, files in os.walk(base):
         dirs[:] = [d for d in dirs if d not in ignored]
         rel_root = os.path.relpath(root, _repo_root)
@@ -76,7 +76,7 @@ def edit_file(path: str, old_str: str, new_str: str) -> str:
 
 def search_code(query: str) -> str:
     results = []
-    ignored = {"node_modules", ".git", "__pycache__", "dist", "build"}
+    ignored = {"node_modules", ".git", "__pycache__", "dist", "build", "venv", ".venv", ".gemini"}
     try:
         pattern = re.compile(query, re.IGNORECASE)
     except re.error:

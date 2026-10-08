@@ -35,7 +35,7 @@ class RepositorySummary:
 
 def _load_gitignore(root: str) -> set:
     gi = os.path.join(root, ".gitignore")
-    ignored = {".git", "node_modules", "__pycache__", ".DS_Store", "dist", "build", ".next"}
+    ignored = {".git", "node_modules", "__pycache__", ".DS_Store", "dist", "build", ".next", "venv", ".venv", ".gemini"}
     if os.path.isfile(gi):
         for line in open(gi).read().splitlines():
             line = line.strip()

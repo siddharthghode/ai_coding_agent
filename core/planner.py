@@ -20,14 +20,23 @@ from core.tools import TOOL_SCHEMAS, TOOL_MAP
 
 PLANNER_TOOLS = [s for s in TOOL_SCHEMAS if s["name"] in ("list_files", "read_file", "search_code")]
 
-def create_plan(cfg: dict, system: str, repo_summary: str, request: str, console=None) -> dict:
+def create_plan(cfg: dict, system: str, repo_summary: str, request: str,
+                console=None, session_context: str = "") -> dict:
+    context_block = f"\n\n{session_context}" if session_context else ""
     messages = [{
         "role": "user",
-        "content": f"REPOSITORY SUMMARY:\n{repo_summary}\n\nUSER REQUEST:\n{request}\n\nProduce the plan JSON."
+        "content": (
+            f"REPOSITORY SUMMARY:\n{repo_summary}"
+            f"{context_block}"
+            f"\n\nUSER REQUEST:\n{request}\n\nProduce the plan JSON."
+        )
     }]
 
-    # Groq's tool-calling is unreliable — disable tools to avoid malformed calls
+    # Groq's tool-calling is disabled — remove tool prompts so it produces JSON directly
     tools = None if cfg["provider"] == "groq" else PLANNER_TOOLS
+    if tools is None:
+        system = system.replace("You have access to tools: list_files, read_file, search_code. Use them to inspect the repo before finalising the plan.\n", "")
+        system = system.replace("- Call search_code / read_file as needed to find exact symbols, routes, schema fields.\n", "")
 
     for _ in range(10):  # tool-use loop
         text, calls = llm.chat(cfg, messages, system, tools=tools)
@@ -36,10 +45,10 @@ def create_plan(cfg: dict, system: str, repo_summary: str, request: str, console
             # LLM is done — extract JSON
             raw = text.strip()
             # strip markdown fences if present
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.startswith("json"):
-                    raw = raw[4:]
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0]
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0]
             return json.loads(raw.strip())
 
         # Execute tool calls and feed results back
